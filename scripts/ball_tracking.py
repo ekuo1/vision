@@ -61,7 +61,7 @@ pts = deque(maxlen=args["buffer"])
 # to the webcam
 if not args.get("video", False):
 	#vs = VideoStream(src=0).start()
-	vs = cv2.VideoCapture("udpsrc port=5000 ! application/x-­rtp, encoding­name=JPEG,payload=26 ! rtpjpegdepay ! jpegdec ! videoconvert! appsink", cv2.CAP_GSTREAMER)
+	vs = cv2.VideoCapture("udpsrc port=5000 ! application/x-rtp,media=video,payload=26,clock-rate=90000,encoding-name=JPEG,framerate=30/1 ! rtpjpegdepay ! jpegdec ! videoconvert ! appsink",cv2.CAP_GSTREAMER)
 # otherwise, grab a reference to the video file
 else:
 	vs = cv2.VideoCapture(args["video"])
@@ -72,18 +72,16 @@ time.sleep(2.0)
 # keep looping
 while True:
 	# grab the current frame
-	frame = vs.read()
-
+	ret, frame = vs.read()
 	# handle the frame from VideoCapture or VideoStream
-	frame = frame[1] if args.get("video", False) else frame
-
+	#frame = frame[1] if args.get("video", False) else frame
 
 	# if we are viewing a video and we did not grab a frame,
 	# then we have reached the end of the video
-	if frame is None:
+	if (frame is None) or (not ret):
 		print("empty frame")
 		break
-		
+
 	# resize the frame, blur it, and convert it to the HSV
 	# color space
 	frame = imutils.resize(frame, width=600)
@@ -149,7 +147,7 @@ while True:
 
 # if we are not using a video file, stop the camera video stream
 if not args.get("video", False):
-	vs.stop()
+	vs.release()
 
 # otherwise, release the camera
 else:
