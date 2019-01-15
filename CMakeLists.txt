@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(vision)
 
+
+
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
@@ -12,12 +14,10 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   sensor_msgs
-  cv_bridge
-  image_transport
   
 )
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 4 REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -111,8 +111,8 @@ find_package(OpenCV REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES vision
-  CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs cv_bridge image_transport 
-#  DEPENDS system_lib
+  CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs 
+  DEPENDS system_lib opencv
 )
 
 ###########
@@ -124,9 +124,10 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
-include_directories(${OpenCV_INCLUDE_DIRS})
+message(STATUS ${OpenCV_INCLUDE_DIRS})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -206,6 +207,29 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(image_converter src/image_converter.cpp)
-target_link_libraries(image_converter ${OpenCV_LIBS} ${catkin_LIBRARIES})
 #add_dependencies(image_converter vision_generate_messages_cpp)
+#target_link_libraries(test_receive ${OpenCV_LIBS} ${catkin_LIBRARIES})
+
+link_directories(${OpenCV_LIB_DIR})
+
+set(CMAKE_PREFIX_PATH "/opt/opencv" ${CMAKE_PREFIX_PATH})
+set(OpenCV_INCLUDE_DIRS
+  /usr/local/include
+  /usr/local/include/opencv4
+)
+
+set(OpenCV_LIB_DIR
+  /usr/local/lib
+)
+
+set(OpenCV_LIBS
+  opencv_core
+  opencv_highgui
+  opencv_imgcodecs
+)
+
+#add_executable(test_receive src/test_receive.cpp)
+#target_link_libraries(test_receive ${OpenCV_INCLUDE_DIRS} ${catkin_LIBRARIES})
+
+#add_executable(test_send src/test_send.cpp)
+#target_link_libraries(test_send ${OpenCV_INCLUDE_DIRS} ${catkin_LIBRARIES})

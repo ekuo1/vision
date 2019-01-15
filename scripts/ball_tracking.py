@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # USAGE
 # python ball_tracking.py --video ball_tracking_example.mp4
@@ -19,26 +20,27 @@ import imutils
 import time
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
+#from cv_bridge import CvBridge, CvBridgeError
 
-class image_converter:
-  	def __init__(self):
-		print("fish")
-		self.image_pub = rospy.Publisher("image_topic_2",Image, queue_size=1)
-		self.bridge = CvBridge()
-		#self.image_sub = rospy.Subscriber("/dev/video1",Image,self.callback)
-	
+#class image_converter:
+#  	def __init__(self):
+#		print("fish")
+#		self.image_pub = rospy.Publisher("image_topic_2",Image, queue_size=1)
+#		self.bridge = CvBridge()
+#		#self.image_sub = rospy.Subscriber("/dev/video1",Image,self.callback)
+#	
+#
+#	def callback(self):
+#		print("dog")
+#
+#		try:
+#			self.image_pub.publish(self.bridge.cv2_to_imgmsg(frame, "bgr8"))
+#		except CvBridgeError as e:
+#			print(e)
+#
+#ic = image_converter()
 
-	def callback(self):
-		print("dog")
-
-		try:
-			self.image_pub.publish(self.bridge.cv2_to_imgmsg(frame, "bgr8"))
-		except CvBridgeError as e:
-			print(e)
-
-ic = image_converter()
-rospy.init_node('image_converter', anonymous=True)
+rospy.init_node('ball_tracking', anonymous=True)
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -58,8 +60,8 @@ pts = deque(maxlen=args["buffer"])
 # if a video path was not supplied, grab the reference
 # to the webcam
 if not args.get("video", False):
-	vs = VideoStream(src=0).start()
-
+	#vs = VideoStream(src=0).start()
+	vs = cv2.VideoCapture("udpsrc port=5000 ! application/x-­rtp, encoding­name=JPEG,payload=26 ! rtpjpegdepay ! jpegdec ! videoconvert! appsink", cv2.CAP_GSTREAMER)
 # otherwise, grab a reference to the video file
 else:
 	vs = cv2.VideoCapture(args["video"])
@@ -75,11 +77,13 @@ while True:
 	# handle the frame from VideoCapture or VideoStream
 	frame = frame[1] if args.get("video", False) else frame
 
+
 	# if we are viewing a video and we did not grab a frame,
 	# then we have reached the end of the video
 	if frame is None:
+		print("empty frame")
 		break
-
+		
 	# resize the frame, blur it, and convert it to the HSV
 	# color space
 	frame = imutils.resize(frame, width=600)
@@ -141,7 +145,7 @@ while True:
 	if key == ord("q"):
 		break
 
-	ic.callback()
+	#ic.callback()
 
 # if we are not using a video file, stop the camera video stream
 if not args.get("video", False):
